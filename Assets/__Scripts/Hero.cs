@@ -9,10 +9,12 @@ public class Hero : MonoBehaviour {
 	public float	rollMult = -45;
 	public float  	pitchMult=30;
 
-	public float	shieldLevel=1;
+	[SerializeField]
+	private float	_shieldLevel=1;
 
 	public bool	_____________________;
 	public Bounds bounds;
+	public GameObject lastTriggerGo = null;
 
 	void Awake(){
 		S = this;
@@ -46,5 +48,39 @@ public class Hero : MonoBehaviour {
 		
 		// rotate the ship to make it feel more dynamic
 		transform.rotation =Quaternion.Euler(yAxis*pitchMult, xAxis*rollMult,0);
+	}
+
+	void OnTriggerEnter(Collider other)
+	{
+		GameObject go = Utils.FindTaggedParent (other.gameObject);
+		if (go != null) 
+		{ 
+			if (go == lastTriggerGo)
+			{ return; }
+
+			lastTriggerGo = go;
+
+			if (go.tag == "Enemy")
+			{
+				//decrease shield level & destroy enemy
+				shieldLevel--;
+				Destroy(go);
+			}
+			else
+			{ print ("Triggered: " + go.name); }
+		} 
+		else 
+		{ print ("Triggered: " + other.gameObject.name); }
+	}
+
+	public float shieldLevel
+	{
+		get{ return(_shieldLevel); }
+		set
+		{
+			_shieldLevel = Mathf.Min (value,4);
+			if(value <0)
+			{ Destroy(this.gameObject); }
+		}
 	}
 }
